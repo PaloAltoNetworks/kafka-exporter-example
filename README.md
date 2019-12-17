@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository contains the first steps of the kafka exporter
+This repository contains the first steps of the Kafka exporter
 It is based on the [events-exporter](https://github.com/aporeto-inc/events-exporter)
 
 ### How to develop
@@ -15,7 +15,6 @@ To adapt this code to whatever you will want to do, you need to
 4. Create the kubernetes and docker-swarm charts using the following command: `PROJECT_NAME=<kafka-exporter> PROJECT_VERSION=<1.0.0> make helm-repo`
 5. Uncompress the tar file and serve it using `helm serve`
 6. Install (i) or Upgrade (u) the chart from within your voila environment `deploy i/u <kafka-exporter>`
-
 
 ### Detailed instructions
 
