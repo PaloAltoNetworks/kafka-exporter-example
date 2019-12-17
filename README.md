@@ -66,3 +66,9 @@ install the app
 ``` bash
 deploy i kafka-exporter/swarm-aporeto-kafka-exporter
 ```
+
+and verify the service is running:
+
+``` bash
+docker service ls | grep kafka-exporter
+```
