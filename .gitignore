@@ -1,0 +1,9 @@
+internal/versions/versions.go
+vendor
+.DS_Store
+docker/app
+kafka-exporter
+
+/helm/repo
+/swarm/repo
+kafka-exporter-1.0.0-helm-local-repo.tgz

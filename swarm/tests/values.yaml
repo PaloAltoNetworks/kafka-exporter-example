@@ -1,0 +1,30 @@
+log:
+  level:
+  format:
+
+global:
+  imageRegistry: gcr.io/aporetodev
+  log:
+    level: info
+    format: json
+
+  certs:
+    ca:
+      system:
+        chain: ca-system-chain
+        cert: ca-system-cert
+        key: ca-system-key
+        pass: ca-system-pass
+    bootstrap:
+      cert: bootstrap-cert
+      key: bootstrap-key
+      pass: bootstrap-pass
+
+  networking:
+    backbone:
+      name: backbone
+
+  accounts:
+    nats:
+     user: nats-user
+     pass: nats-pass

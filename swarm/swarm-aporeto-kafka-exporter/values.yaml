@@ -1,0 +1,17 @@
+replicas: 1
+
+log:
+  level:
+  format:
+
+global:
+  imageRegistry: docker.io/aporeto
+  log:
+    level: info
+    format: json
+
+placement:
+  constraints:
+  - node.labels.aporeto.backend == all
+  preferences:
+  - spread: node.labels.aporeto.backend

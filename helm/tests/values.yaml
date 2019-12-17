@@ -1,0 +1,18 @@
+global:
+  imageRegistry: docker.io/aporeto
+  certs:
+    ca:
+      system:
+        chain: ca-system-chain
+        cert: ca-system-cert
+        key: ca-system-key
+        pass: ca-system-pass
+    bootstrap:
+      cert: bootstrap-cert
+      key: bootstrap-key
+      pass: bootstrap-pass
+
+  accounts:
+    nats:
+     user: nats-user
+     pass: nats-pass

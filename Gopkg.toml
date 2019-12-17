@@ -1,0 +1,22 @@
+## Aporeto
+[[constraint]]
+  name = "go.aporeto.io/addedeffect"
+  branch = "master"
+
+[[constraint]]
+  name = "go.aporeto.io/bahamut"
+  branch = "master"
+
+[[constraint]]
+  name = "go.aporeto.io/elemental"
+  branch = "master"
+
+## 3rd Party
+
+[[constraint]]
+  name = "go.uber.org/zap"
+  version = "1.x"
+
+[prune]
+  go-tests = true
+  unused-packages = true
