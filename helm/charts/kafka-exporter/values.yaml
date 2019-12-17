@@ -1,0 +1,20 @@
+replicas: 1
+
+log:
+  level: info
+  format: stackdriver
+
+global:
+  imageRegistry: docker.io/aporeto
+  nodeAffinity:
+    enabled: false
+    mode: required
+  log:
+    level: info
+    format: stackdriver
+
+nodeAffinity:
+  key: type
+  operator: In
+  value: service
+  required: false

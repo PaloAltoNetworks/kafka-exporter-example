@@ -79,7 +79,8 @@ func sendPublication(pub *bahamut.Publication) error {
 		return sendEnforcerReport(enforcer)
 
 	default:
-		return fmt.Errorf("unsupported entity %s", gaia.ActivityIdentity.Name)
+		fmt.Printf("skipping event for %s\n", obj.Identity().Name)
+		return nil
 
 	}
 }

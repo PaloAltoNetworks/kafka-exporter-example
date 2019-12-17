@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-exporter
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: kafka-exporter
+      type: aporeto
+  template:
+    metadata:
+      labels:
+        app: kafka-exporter
+        type: aporeto
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+        allowPrivilegeEscalation: false
+        {{- if .Values.global.imagePullSecrets }}
+        imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        {{- range $k, $v := . }}
+        - name: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+      affinity:
+        {{- if .Values.global.nodeAffinity.enabled }}
+        nodeAffinity:
+          {{- if eq .Values.global.nodeAffinity.mode "required" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: {{ .Values.nodeAffinity.key | quote }}
+                operator: {{ .Values.nodeAffinity.operator }}
+                values:
+                - {{ .Values.nodeAffinity.value | quote }}
+          {{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: {{ .Values.nodeAffinity.key | quote }}
+                  operator: {{ .Values.nodeAffinity.operator }}
+                  values:
+                  - {{ .Values.nodeAffinity.value | quote }}
+          {{- end }}
+        {{- end }}
+      containers:
+        - name: kafka-exporter
+          image: {{ required "global.imageRegistry is required" .Values.global.imageRegistry }}/kafka-exporter:{{ .Chart.AppVersion }}
+          imagePullPolicy: Always
+          env:
+            - name : EVENTS_EXPORTER_PUBSUB_ADDRESS
+              value: "nats://nats:4222"
+            - name: EVENTS_EXPORTER_CACERT
+              value: /certs/ca-chain-system.pem
+            - name: EVENTS_EXPORTER_CLIENT_CERT
+              value: /certs/bootstrap-cert.pem
+            - name: EVENTS_EXPORTER_CLIENT_CERT_KEY
+              value: /certs/bootstrap-key.pem
+            - name: EVENTS_EXPORTER_CLIENT_CERT_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name | lower }}-secrets
+                  key: bootstrap-key.pass
+            - name: EVENTS_EXPORTER_LOG_LEVEL
+              value: {{ .Values.log.level | default .Values.global.log.level | quote }}
+            - name: EVENTS_EXPORTER_LOG_FORMAT
+              value: {{ .Values.log.format | default .Values.global.log.format | quote }}
+            - name: EVENTS_EXPORTER_PUBSUB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name | lower }}-secrets
+                  key: accounts.nats.user
+            - name: EVENTS_EXPORTER_PUBSUB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name | lower }}-secrets
+                  key: accounts.nats.pass
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+      volumes:
+        - name: certs
+          secret:
+            secretName: kafka-exporter-secrets
+            items:
+            - key: ca-chain-system.pem
+              path: ca-chain-system.pem
+            - key: bootstrap-cert.pem
+              path: bootstrap-cert.pem
+            - key: bootstrap-key.pem
+              path: bootstrap-key.pem
