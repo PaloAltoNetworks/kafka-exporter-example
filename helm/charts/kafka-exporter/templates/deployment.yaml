@@ -53,29 +53,29 @@ spec:
           image: {{ required "global.imageRegistry is required" .Values.global.imageRegistry }}/kafka-exporter:{{ .Chart.AppVersion }}
           imagePullPolicy: Always
           env:
-            - name : EVENTS_EXPORTER_PUBSUB_ADDRESS
+            - name : KAFKA_EXPORTER_PUBSUB_ADDRESS
               value: "nats://nats:4222"
-            - name: EVENTS_EXPORTER_CACERT
+            - name: KAFKA_EXPORTER_CACERT
               value: /certs/ca-chain-system.pem
-            - name: EVENTS_EXPORTER_CLIENT_CERT
+            - name: KAFKA_EXPORTER_CLIENT_CERT
               value: /certs/bootstrap-cert.pem
-            - name: EVENTS_EXPORTER_CLIENT_CERT_KEY
+            - name: KAFKA_EXPORTER_CLIENT_CERT_KEY
               value: /certs/bootstrap-key.pem
-            - name: EVENTS_EXPORTER_CLIENT_CERT_KEY_PASS
+            - name: KAFKA_EXPORTER_CLIENT_CERT_KEY_PASS
               valueFrom:
                 secretKeyRef:
                   name: {{ .Chart.Name | lower }}-secrets
                   key: bootstrap-key.pass
-            - name: EVENTS_EXPORTER_LOG_LEVEL
+            - name: KAFKA_EXPORTER_LOG_LEVEL
               value: {{ .Values.log.level | default .Values.global.log.level | quote }}
-            - name: EVENTS_EXPORTER_LOG_FORMAT
+            - name: KAFKA_EXPORTER_LOG_FORMAT
               value: {{ .Values.log.format | default .Values.global.log.format | quote }}
-            - name: EVENTS_EXPORTER_PUBSUB_USER
+            - name: KAFKA_EXPORTER_PUBSUB_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Chart.Name | lower }}-secrets
                   key: accounts.nats.user
-            - name: EVENTS_EXPORTER_PUBSUB_PASS
+            - name: KAFKA_EXPORTER_PUBSUB_PASS
               valueFrom:
                 secretKeyRef:
                   name: {{ .Chart.Name | lower }}-secrets
