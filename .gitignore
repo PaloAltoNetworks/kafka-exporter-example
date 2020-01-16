@@ -3,6 +3,7 @@ vendor
 .DS_Store
 docker/app
 kafka-exporter-example
+kafka-exporter
 
 /helm-local-repo/
 /helm/repo
