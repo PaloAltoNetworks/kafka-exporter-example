@@ -24,6 +24,11 @@ type Configuration struct {
 	NATSClientID             string `mapstructure:"pubsub-client-id"            desc:"Nats client ID"                                           `
 	NATSClusterID            string `mapstructure:"pubsub-cluster-id"           desc:"Nats cluster ID"                                          default:"test-cluster"`
 	NATSAddress              string `mapstructure:"pubsub-address"              desc:"Nats Address"                                             required:"true"`
+	TopicAuditReports        string `mapstructure:"topic-audit-reports"         desc:"Topic name for audit reports"                             default:"external-auditreports"`
+	TopicFlowReports         string `mapstructure:"topic-flow-reports"          desc:"Topic name for flow reports"                              default:"external-flowreports"`
+	TopicEvents              string `mapstructure:"topic-events"                desc:"Topic name for events"                                    default:"events.>"`
+	TopicEventLogs           string `mapstructure:"topic-event-logs"            desc:"Topic name for event logs"                                default:"external-eventlogs"`
+	TopicActivities          string `mapstructure:"topic-activities"            desc:"Topic name for activities"                                default:"activities"`
 
 	CAPool               *x509.CertPool
 	ClientCertificate    string

@@ -33,21 +33,30 @@ func main() {
 	)
 	defer pubsub.Disconnect() // nolint
 
-	if connected := pubsub.Connect().Wait(30 * time.Second); !connected {
-		zap.L().Fatal("Could not connect to nats")
+	connectCtx, connectCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer connectCancel()
+
+	if err := pubsub.Connect(connectCtx); err != nil {
+		zap.L().Fatal("Could not connect to nats", zap.Error(err))
 	}
+	defer pubsub.Disconnect() // nolint
 
 	zap.L().Info("Connected to nats", zap.String("address", cfg.NATSAddress))
 
 	// Squall events
 	eventsErrs := make(chan error)
 	eventsPubs := make(chan *bahamut.Publication)
-	pubsub.Subscribe(eventsPubs, eventsErrs, "squall-events", bahamut.NATSOptSubscribeQueue(cfg.NATSQueueName))
+	pubsub.Subscribe(eventsPubs, eventsErrs, cfg.TopicEvents, bahamut.NATSOptSubscribeQueue(cfg.NATSQueueName))
 
 	// Activities also named Audit logs
 	activitiesErrs := make(chan error)
 	activitiesPubs := make(chan *bahamut.Publication)
-	pubsub.Subscribe(activitiesPubs, activitiesErrs, "activities", bahamut.NATSOptSubscribeQueue(cfg.NATSQueueName))
+	pubsub.Subscribe(activitiesPubs, activitiesErrs, cfg.TopicActivities, bahamut.NATSOptSubscribeQueue(cfg.NATSQueueName))
+
+	// Flow reports
+	flowReportsErrs := make(chan error)
+	flowReportsPubs := make(chan *bahamut.Publication)
+	pubsub.Subscribe(flowReportsPubs, flowReportsErrs, cfg.TopicFlowReports, bahamut.NATSOptSubscribeQueue(cfg.NATSQueueName))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -70,6 +79,14 @@ func main() {
 			}
 		case err := <-activitiesErrs:
 			fmt.Printf("Got an activity error %s\n", err)
+
+		// Flow reports
+		case p := <-flowReportsPubs:
+			if errSend := sendFlowReport(p); errSend != nil {
+				fmt.Println("sendFlowReport error: ", errSend)
+			}
+		case err := <-flowReportsErrs:
+			fmt.Printf("Got an flow record error %s\n", err)
 
 		case <-ctx.Done():
 			fmt.Println("Exit")
@@ -96,7 +113,6 @@ func sendPublication(pub *bahamut.Publication) error {
 	default:
 		fmt.Printf("skipping event for %s\n", obj.Identity().Name)
 		return nil
-
 	}
 }
 
@@ -152,6 +168,26 @@ func sendActivity(pub *bahamut.Publication) error {
 	Namespace: %s
 	Diff: %s
 `, activity.ID, activity.Date, activity.Namespace, activity.Diff)
+
+	return nil
+}
+
+// sendFlowReport sends a flow report from a publication.
+func sendFlowReport(pub *bahamut.Publication) error {
+
+	flowReport := gaia.NewFlowReport()
+
+	if err := pub.Decode(flowReport); err != nil {
+		return fmt.Errorf("unable to decode the flowReport: %s", err)
+	}
+
+	fmt.Printf(`--- FlowReport to be send to Kafka:
+	Date: %v
+	Namespace: %s
+	SourceID: %s
+	DestinationID: %s
+	Hits: %d
+`, flowReport.Timestamp, flowReport.Namespace, flowReport.SourceID, flowReport.DestinationID, flowReport.Value)
 
 	return nil
 }

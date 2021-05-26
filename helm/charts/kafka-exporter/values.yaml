@@ -18,3 +18,10 @@ nodeAffinity:
   operator: In
   value: service
   required: false
+
+topic:
+  auditReports: external-auditreports
+  flowReports: external-flowreports
+  events: events.>
+  eventLogs: external-eventlogs
+  activities: activities
