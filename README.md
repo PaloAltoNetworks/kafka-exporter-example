@@ -14,7 +14,7 @@ DOCKER_REGISTRY=<your.registry/your_organisation> PROJECT_VERSION=1.0.0 make
 
 This will:
 
-- build and push a docker images as `your.registry/your_organisation/kafka-exporter:2.0.0`
+- build and push a docker images as `your.registry/your_organisation/kafka-exporter:1.0.0`
 - build the Helm charts locally
 
 ## How to deploy
