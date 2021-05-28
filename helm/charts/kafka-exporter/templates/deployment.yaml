@@ -70,6 +70,26 @@ spec:
               value: {{ .Values.log.level | default .Values.global.log.level | quote }}
             - name: KAFKA_EXPORTER_LOG_FORMAT
               value: {{ .Values.log.format | default .Values.global.log.format | quote }}
+            {{ if .Values.topic.auditReports }}
+            - name: EVENTS_EXPORTER_TOPIC_AUDIT_REPORTS
+              value: {{ .Values.topic.auditReports | quote }}
+            {{- end }}
+            {{ if .Values.topic.flowReports }}
+            - name: EVENTS_EXPORTER_TOPIC_FLOW_REPORTs
+              value: {{ .Values.topic.flowReports | quote }}
+            {{- end }}
+            {{ if .Values.topic.events }}
+            - name: EVENTS_EXPORTER_TOPIC_EVENTS
+              value: {{ .Values.topic.events | quote }}
+            {{- end }}
+            {{ if .Values.topic.eventLogs }}
+            - name: EVENTS_EXPORTER_TOPIC_EVENT_LOGS
+              value: {{ .Values.topic.eventLogs | quote }}
+            {{- end }}
+            {{ if .Values.topic.activities }}
+            - name: EVENTS_EXPORTER_TOPIC_ACTIVITIES
+              value: {{ .Values.topic.activities | quote }}
+            {{- end }}
             - name: KAFKA_EXPORTER_PUBSUB_USER
               valueFrom:
                 secretKeyRef:

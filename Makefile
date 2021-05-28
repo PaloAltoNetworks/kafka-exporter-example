@@ -57,7 +57,7 @@ container: package
 push: container
 	docker push $(DOCKER_REGISTRY)/$(PROJECT_NAME):$(PROJECT_VERSION)
 
-charts: charts-k8s charts-swarm
+charts: charts-k8s
 
 charts-k8s:
 	@rm -rf ./helm/repo
@@ -68,17 +68,7 @@ charts-k8s:
 		--app-version $(PROJECT_VERSION) \
 		./helm/charts/kafka-exporter \
 		-d ./helm/repo/
-
-charts-swarm:
-	@rm -rf ./swarm/repo
-	@mkdir -p ./swarm/repo
-	@helm lint ./swarm/swarm-aporeto-kafka-exporter -f ./swarm/tests/values.yaml
-	@helm package \
-		--version $(PROJECT_VERSION) \
-		--app-version $(PROJECT_VERSION) \
-		./swarm/swarm-aporeto-kafka-exporter \
-		-d ./swarm/repo/
-
+		
 helm-repo: charts
 	@mkdir -p helm-local-repo
 	@cp ./helm/repo/* ./swarm/repo/* helm-local-repo/
