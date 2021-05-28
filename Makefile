@@ -7,59 +7,70 @@ PROJECT_SHA ?= $(shell git rev-parse HEAD)
 PROJECT_VERSION ?= v0.0.0-dev
 PROJECT_RELEASE ?= dev
 
-init:
-	dep ensure
-	dep status
+export GO111MODULE = on
 
-lint:
-	@ go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+define VERSIONS_FILE
+package versions
 
-	# this linter is disabled because of https://github.com/mvdan/unparam/issues/35
-	# --enable=unparam
+// Various version information.
+var (
+	ProjectVersion = "$(PROJECT_VERSION)"
+	ProjectSha     = "$(PROJECT_SHA)"
+	ProjectRelease = "$(PROJECT_RELEASE)"
+)
+endef
+export VERSIONS_FILE
+
+default: push charts
+
+version:
+	@echo "$$VERSIONS_FILE" > ./internal/versions/versions.go
+
+lint: version
+	# linting
 	golangci-lint run \
-		--deadline=3m \
 		--disable-all \
 		--exclude-use-default=false \
 		--enable=errcheck \
 		--enable=goimports \
 		--enable=ineffassign \
-		--enable=govet \
-		--enable=golint \
+		--enable=revive \
 		--enable=unused \
 		--enable=structcheck \
+		--enable=staticcheck \
 		--enable=varcheck \
 		--enable=deadcode \
 		--enable=unconvert \
-		--enable=goconst \
-		--enable=gosimple \
 		--enable=misspell \
-		--enable=staticcheck \
 		--enable=prealloc \
 		--enable=nakedret \
 		--enable=typecheck \
 		./...
 
-test:
+test: lint
+	# testing
 	go test ./... -race
 
-build:
+build: test
+	# building
 	go build
 
-build_linux:
+build_linux: test
+	# building
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 
-package: build_linux
-	cp ./kafka-exporter-example ./docker/app/kafka-exporter
-
-container: package
-	cd docker && docker build -t $(DOCKER_REGISTRY)/$(PROJECT_NAME):$(PROJECT_VERSION) .
+container: build_linux
+	# creating container
+	@mkdir -p ./docker/app
+	@cp ./kafka-exporter-example ./docker/app/kafka-exporter
+	@cd docker && docker build -t $(DOCKER_REGISTRY)/$(PROJECT_NAME):$(PROJECT_VERSION) .
 
 push: container
+	# pushing container
 	docker push $(DOCKER_REGISTRY)/$(PROJECT_NAME):$(PROJECT_VERSION)
 
-charts: charts-k8s
-
-charts-k8s:
+charts:
+	# building helm charts
 	@rm -rf ./helm/repo
 	@mkdir -p ./helm/repo
 	@helm lint ./helm/charts/kafka-exporter -f ./helm/tests/values.yaml
@@ -68,10 +79,3 @@ charts-k8s:
 		--app-version $(PROJECT_VERSION) \
 		./helm/charts/kafka-exporter \
 		-d ./helm/repo/
-		
-helm-repo: charts
-	@mkdir -p helm-local-repo
-	@cp ./helm/repo/* ./swarm/repo/* helm-local-repo/
-	@helm repo index helm-local-repo/
-	@tar czf $(PROJECT_NAME)-$(PROJECT_VERSION)-helm-local-repo.tgz helm-local-repo
-	@rm -rf helm-local-repo

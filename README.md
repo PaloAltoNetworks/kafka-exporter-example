@@ -3,72 +3,59 @@
 ## Description
 
 This repository contains the first steps of the Kafka exporter
-It is based on the [events-exporter](https://github.com/aporeto-inc/events-exporter)
 
-### How to develop
+## How to build
 
-To adapt this code to whatever you will want to do, you need to
+To adapt this code to your liking then
 
-1. Clone the repository
-2. Update the `main.go` file as you wish
-3. Upload your docker image in a docker registry that is accessible to you (i.e: `DOCKER_REGISTRY=<docker.io/aporeto> PROJECT_NAME=<kafka-exporter> PROJECT_VERSION=<1.0.0> make push`)
-4. Create the kubernetes and docker-swarm charts using the following command: `PROJECT_NAME=<kafka-exporter> PROJECT_VERSION=<1.0.0> make helm-repo`
-5. Uncompress the tar file and serve it using `helm serve`
-6. Install (i) or Upgrade (u) the chart from within your voila environment `deploy i/u <kafka-exporter>`
-
-### Detailed instructions
-
-Share you docker image
-
-``` bash
-DOCKER_REGISTRY=<docker.io/aporeto> PROJECT_NAME=<kafka-exporter> PROJECT_VERSION=<1.0.0> make push
+```console
+DOCKER_REGISTRY=<your.registry/your_organisation> PROJECT_VERSION=1.0.0 make
 ```
 
-Create the charts and aggregate them in a single `tar.gz` file:
+This will:
 
-``` bash
-PROJECT_NAME=<kafka-exporter> PROJECT_VERSION=<1.0.0> make helm-repo
+- build and push a docker images as `your.registry/your_organisation/kafka-exporter:2.0.0`
+- build the Helm charts locally
+
+## How to deploy
+
+First you need to enable the push of external events to Nats on the targetted setup.
+
+Activate your [voila](https://docs.console.aporeto.com/docs/install/what-is-voila/) environment then
+
+```console
+# Enable the external events
+set_value global.externalEventsEnabled true override
+# Apply the configuration
+doit
 ```
 
-Uncompress the tar file to serve it from your local helm repo:
+Then push the Helm charts to your Helm repository then:
 
-``` bash
-tar xvf kafka-exporter-1.0.0-helm-local-repo.tgz
-helm serve --repo-path=helm-local-repo --address 127.0.0.1:8880 &
-helm repo add kafka-exporter http://127.0.0.1:8880
+```console
+# add you repository
+helm repo add kafka-exporter <your_helm_repository_url>
+# deploy
+VOILA_HELM_REPO=kafka-exporter deploy i kafka-exporter
 ```
 
-Activate your [voila](https://docs.console.aporeto.com/docs/install/what-is-voila/) environment:
+To update:
 
-``` bash
-cd /path/to/your/voila/deployment
-source conf.voila
+```console
+# add you repository
+helm repo add kafka-exporter <your_helm_repository_url>
+# update
+VOILA_HELM_REPO=kafka-exporter deploy u kafka-exporter
 ```
 
-#### Kubernetes
+To uninstall just type `deploy d kafka-exporter`
 
-Install the app
-
-``` bash
-VOILA_HELM_REPO="kafka-exporter" deploy i kafka-exporter
-```
-
-and verify the pod is running:
-
-``` bash
-k get pods | grep kafka-exporter
-```
-
-#### Docker Swarm
-
-install the app
-
-``` bash
-deploy i kafka-exporter/swarm-aporeto-kafka-exporter
-```
-
-and verify the service is running:
-
-``` bash
-docker service ls | grep kafka-exporter
-```
+> Note: you must deploy the kafka-exporter using the voila environement as explained above because
+> it requires access to some secrets to be able to connect to Nats.
+> If the docker image of the kafka-exporter is not hosted on the same registry where the contron plane
+> docker images are hosted, add an option as below during install or update:
+>
+> ```console
+> # use another docker registry
+> VOILA_HELM_REPO=kafka-exporter deploy i kafka-exporter --set global.imageRegistry=<your.registry/your_organisation>
+> ```

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: kafka-exporter
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: 1
   selector:
     matchLabels:
       app: kafka-exporter
