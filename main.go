@@ -66,24 +66,24 @@ func main() {
 
 		// Squall events
 		case p := <-eventsPubs:
-			if errSend := sendPublication(p); errSend != nil {
-				fmt.Println("sendPublication error: ", errSend)
+			if err := sendPublication(p); err != nil {
+				fmt.Println("sendPublication error: ", err)
 			}
 		case err := <-eventsErrs:
 			fmt.Printf("Got an event error %s\n", err)
 
 		// Activities
 		case p := <-activitiesPubs:
-			if errSend := sendActivity(p); errSend != nil {
-				fmt.Println("sendActivity error: ", errSend)
+			if err := sendActivity(p); err != nil {
+				fmt.Println("sendActivity error: ", err)
 			}
 		case err := <-activitiesErrs:
 			fmt.Printf("Got an activity error %s\n", err)
 
 		// Flow reports
 		case p := <-flowReportsPubs:
-			if errSend := sendFlowReport(p); errSend != nil {
-				fmt.Println("sendFlowReport error: ", errSend)
+			if err := sendFlowReport(p); err != nil {
+				fmt.Println("sendFlowReport error: ", err)
 			}
 		case err := <-flowReportsErrs:
 			fmt.Printf("Got an flow record error %s\n", err)
